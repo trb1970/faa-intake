@@ -3,6 +3,16 @@
 import { useState } from "react";
 import type { User } from "@/types";
 
+const CATEGORY_OPTIONS = [
+  "",
+  "Call Back",
+  "Estimate for New System",
+  "Free 2nd Opinion",
+  "Repair Estimate",
+  "Other",
+  "Maintenance",
+];
+
 const HEAR_OPTIONS = [
   "",
   "Google",
@@ -32,6 +42,7 @@ interface FormState {
   gate_code: string;
   email: string;
   notes_to_tech: string;
+  category: string;
   how_did_you_hear: string;
 }
 
@@ -48,6 +59,7 @@ const INITIAL_FORM: FormState = {
   gate_code: "",
   email: "",
   notes_to_tech: "",
+  category: "",
   how_did_you_hear: "",
 };
 
@@ -103,6 +115,7 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
         gate_code: form.gated === "Yes" ? form.gate_code.trim() : "",
         reason_for_call: form.reason_for_call.trim(),
         notes_to_tech: form.notes_to_tech.trim(),
+        category: form.category,
         how_did_you_hear: form.how_did_you_hear,
         selected_slot: selectedSlot,
         opportunity_owner: user.name,
@@ -316,6 +329,23 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
             className={`${inputClass} h-16 resize-none`}
             placeholder="e.g. Dog in backyard"
           />
+        </div>
+
+        {/* Category */}
+        <div>
+          <label className={labelClass}>Category</label>
+          <select
+            value={form.category}
+            onChange={(e) => update("category", e.target.value)}
+            className={inputClass}
+          >
+            <option value="">— Select —</option>
+            {CATEGORY_OPTIONS.filter(Boolean).map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* How Did You Hear */}

@@ -1,0 +1,222 @@
+{
+  "name": "FAA Live Call Intake → Google Sheet",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "live-call-intake",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "webhook-node",
+      "name": "Webhook - Live Call Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "live-call-intake"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ts",
+              "name": "timestamp",
+              "value": "={{ $now.format('MM/dd/yyyy hh:mm a') }}",
+              "type": "string"
+            },
+            {
+              "id": "fn",
+              "name": "first_name",
+              "value": "={{ $json.body.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "ln",
+              "name": "last_name",
+              "value": "={{ $json.body.last_name }}",
+              "type": "string"
+            },
+            {
+              "id": "ph",
+              "name": "phone",
+              "value": "={{ $json.body.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "addr",
+              "name": "address",
+              "value": "={{ $json.body.address }}",
+              "type": "string"
+            },
+            {
+              "id": "unit",
+              "name": "unit",
+              "value": "={{ $json.body.unit }}",
+              "type": "string"
+            },
+            {
+              "id": "zip",
+              "name": "zip_code",
+              "value": "={{ $json.body.zip_code }}",
+              "type": "string"
+            },
+            {
+              "id": "email",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "txt",
+              "name": "ok_to_text",
+              "value": "={{ $json.body.ok_to_text }}",
+              "type": "string"
+            },
+            {
+              "id": "gate",
+              "name": "gated",
+              "value": "={{ $json.body.gated }}",
+              "type": "string"
+            },
+            {
+              "id": "gc",
+              "name": "gate_code",
+              "value": "={{ $json.body.gate_code }}",
+              "type": "string"
+            },
+            {
+              "id": "reason",
+              "name": "reason_for_call",
+              "value": "={{ $json.body.reason_for_call }}",
+              "type": "string"
+            },
+            {
+              "id": "notes",
+              "name": "notes_to_tech",
+              "value": "={{ $json.body.notes_to_tech }}",
+              "type": "string"
+            },
+            {
+              "id": "cat",
+              "name": "category",
+              "value": "={{ $json.body.category }}",
+              "type": "string"
+            },
+            {
+              "id": "hear",
+              "name": "how_did_you_hear",
+              "value": "={{ $json.body.how_did_you_hear }}",
+              "type": "string"
+            },
+            {
+              "id": "slot",
+              "name": "selected_slot",
+              "value": "={{ $json.body.selected_slot }}",
+              "type": "string"
+            },
+            {
+              "id": "owner",
+              "name": "opportunity_owner",
+              "value": "={{ $json.body.opportunity_owner }}",
+              "type": "string"
+            },
+            {
+              "id": "source",
+              "name": "intake_source",
+              "value": "={{ $json.body.intake_source }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-fields-node",
+      "name": "Map Intake Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "mode": "url",
+          "value": "YOUR_GOOGLE_SHEET_URL_HERE"
+        },
+        "sheetName": {
+          "mode": "name",
+          "value": "Sheet1"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {}
+      },
+      "id": "sheets-node",
+      "name": "Append to Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [710, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": ""
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": true, \"message\": \"Intake received\" }",
+        "options": {}
+      },
+      "id": "response-node",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [940, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Live Call Intake": {
+      "main": [
+        [
+          {
+            "node": "Map Intake Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Intake Fields": {
+      "main": [
+        [
+          {
+            "node": "Append to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

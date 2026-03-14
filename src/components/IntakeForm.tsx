@@ -88,6 +88,8 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
     if (!form.address.trim()) errs.address = "Address is required";
     if (!form.zip_code.trim()) errs.zip_code = "Zip code is required";
     if (!form.phone.trim()) errs.phone = "Phone is required";
+    if (!form.category) errs.category = "Category is required";
+    if (!form.how_did_you_hear) errs.how_did_you_hear = "This field is required";
     if (!selectedSlot) errs.selected_slot = "Please select an appointment slot";
     return errs;
   }
@@ -333,7 +335,7 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
 
         {/* Category */}
         <div>
-          <label className={labelClass}>Category</label>
+          <label className={labelClass}>Category *</label>
           <select
             value={form.category}
             onChange={(e) => update("category", e.target.value)}
@@ -346,11 +348,12 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
               </option>
             ))}
           </select>
+          {errors.category && <p className={errorClass}>{errors.category}</p>}
         </div>
 
         {/* How Did You Hear */}
         <div>
-          <label className={labelClass}>How Did You Hear About Us</label>
+          <label className={labelClass}>How Did You Hear About Us *</label>
           <select
             value={form.how_did_you_hear}
             onChange={(e) => update("how_did_you_hear", e.target.value)}
@@ -363,6 +366,7 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
               </option>
             ))}
           </select>
+          {errors.how_did_you_hear && <p className={errorClass}>{errors.how_did_you_hear}</p>}
         </div>
 
         {/* Slot validation error */}

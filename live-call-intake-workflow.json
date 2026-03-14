@@ -112,6 +112,18 @@
               "type": "string"
             },
             {
+              "id": "tname",
+              "name": "tenant_name",
+              "value": "={{ $json.body.tenant_name }}",
+              "type": "string"
+            },
+            {
+              "id": "tphone",
+              "name": "tenant_phone",
+              "value": "={{ $json.body.tenant_phone }}",
+              "type": "string"
+            },
+            {
               "id": "slot",
               "name": "selected_slot",
               "value": "={{ $json.body.selected_slot }}",

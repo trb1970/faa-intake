@@ -19,7 +19,14 @@ const HEAR_OPTIONS = [
   "Yelp",
   "Nextdoor",
   "Referral",
-  "Repeat Customer",
+  "Past Customer",
+  "ChatGPT",
+  "Reddit",
+  "Service Truck",
+  "TikTok",
+  "Instagram",
+  "FaceBook",
+  "Website",
   "Other",
 ];
 
@@ -44,6 +51,8 @@ interface FormState {
   notes_to_tech: string;
   category: string;
   how_did_you_hear: string;
+  tenant_name: string;
+  tenant_phone: string;
 }
 
 const INITIAL_FORM: FormState = {
@@ -61,6 +70,8 @@ const INITIAL_FORM: FormState = {
   notes_to_tech: "",
   category: "",
   how_did_you_hear: "",
+  tenant_name: "",
+  tenant_phone: "",
 };
 
 export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFormProps) {
@@ -119,6 +130,8 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
         notes_to_tech: form.notes_to_tech.trim(),
         category: form.category,
         how_did_you_hear: form.how_did_you_hear,
+        tenant_name: form.tenant_name.trim(),
+        tenant_phone: form.tenant_phone.trim(),
         selected_slot: selectedSlot,
         opportunity_owner: user.name,
         intake_source: "live_intake",
@@ -367,6 +380,30 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
             ))}
           </select>
           {errors.how_did_you_hear && <p className={errorClass}>{errors.how_did_you_hear}</p>}
+        </div>
+
+        {/* Tenant Info */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass}>Tenant Name</label>
+            <input
+              type="text"
+              value={form.tenant_name}
+              onChange={(e) => update("tenant_name", e.target.value)}
+              className={inputClass}
+              placeholder="Tenant name"
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Tenant Phone Number</label>
+            <input
+              type="text"
+              value={form.tenant_phone}
+              onChange={(e) => update("tenant_phone", e.target.value)}
+              className={inputClass}
+              placeholder="Tenant phone"
+            />
+          </div>
         </div>
 
         {/* Slot validation error */}

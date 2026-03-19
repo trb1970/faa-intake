@@ -82,13 +82,15 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
 
   function update(field: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[field];
-        return next;
-      });
-    }
+    const clearFields: string[] = [field];
+    if (field === "gated" && value === "No") clearFields.push("gate_code");
+    setErrors((prev) => {
+      const next = { ...prev };
+      for (const f of clearFields) {
+        if (next[f]) delete next[f];
+      }
+      return next;
+    });
   }
 
   function validate(): Record<string, string> {
@@ -97,8 +99,12 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
     if (!form.first_name.trim()) errs.first_name = "First name is required";
     if (!form.last_name.trim()) errs.last_name = "Last name is required";
     if (!form.address.trim()) errs.address = "Address is required";
+    if (!form.unit.trim()) errs.unit = "Unit # is required";
     if (!form.zip_code.trim()) errs.zip_code = "Zip code is required";
     if (!form.phone.trim()) errs.phone = "Phone is required";
+    if (form.gated === "Yes" && !form.gate_code.trim()) errs.gate_code = "Gate code or instructions required when gated";
+    if (!form.email.trim()) errs.email = "Email is required";
+    if (!form.notes_to_tech.trim()) errs.notes_to_tech = "Notes to tech is required";
     if (!form.category) errs.category = "Category is required";
     if (!form.how_did_you_hear) errs.how_did_you_hear = "This field is required";
     if (!selectedSlot) errs.selected_slot = "Please select an appointment slot";
@@ -232,7 +238,7 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
         {/* Unit + Zip Row */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>Unit #</label>
+            <label className={labelClass}>Unit # *</label>
             <input
               type="text"
               value={form.unit}
@@ -240,6 +246,7 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
               className={inputClass}
               placeholder="Apt, Suite, etc."
             />
+            {errors.unit && <p className={errorClass}>{errors.unit}</p>}
           </div>
           <div>
             <label className={labelClass}>Zip Code *</label>
@@ -312,20 +319,21 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
         {/* Gate Code — conditional */}
         {form.gated === "Yes" && (
           <div>
-            <label className={labelClass}>Gate Code</label>
+            <label className={labelClass}>Gate Code *</label>
             <input
               type="text"
               value={form.gate_code}
               onChange={(e) => update("gate_code", e.target.value)}
               className={inputClass}
-              placeholder="Gate code"
+              placeholder="Gate code or instructions"
             />
+            {errors.gate_code && <p className={errorClass}>{errors.gate_code}</p>}
           </div>
         )}
 
         {/* Email */}
         <div>
-          <label className={labelClass}>Email</label>
+          <label className={labelClass}>Email *</label>
           <input
             type="text"
             value={form.email}
@@ -333,17 +341,19 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
             className={inputClass}
             placeholder="Email address"
           />
+          {errors.email && <p className={errorClass}>{errors.email}</p>}
         </div>
 
         {/* Notes to Tech */}
         <div>
-          <label className={labelClass}>Anything Else / Notes to Tech</label>
+          <label className={labelClass}>Anything Else / Notes to Tech *</label>
           <textarea
             value={form.notes_to_tech}
             onChange={(e) => update("notes_to_tech", e.target.value)}
             className={`${inputClass} h-16 resize-none`}
             placeholder="e.g. Dog in backyard"
           />
+          {errors.notes_to_tech && <p className={errorClass}>{errors.notes_to_tech}</p>}
         </div>
 
         {/* Category */}

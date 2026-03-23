@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import LoginScreen from "@/components/LoginScreen";
 import IntakeForm from "@/components/IntakeForm";
 import AvailabilityPanel from "@/components/AvailabilityPanel";
-import type { User } from "@/types";
+import type { User, Slot } from "@/types";
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("faa_user");
@@ -55,6 +55,9 @@ export default function Home() {
             </h1>
           </div>
           <div className="flex items-center gap-4">
+            <span className="text-[#0d0f14] bg-amber-500 font-mono text-xs font-bold px-2 py-0.5 rounded">
+              v0.5
+            </span>
             <span className="text-gray-400 text-sm">
               Logged in as <span className="text-white font-semibold">{user.name}</span>
             </span>

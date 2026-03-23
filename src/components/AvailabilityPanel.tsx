@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { Slot, AvailabilityResponse } from "@/types";
 
 interface AvailabilityPanelProps {
-  selectedSlot: string | null;
-  onSelectSlot: (slotDisplay: string | null) => void;
+  selectedSlot: Slot | null;
+  onSelectSlot: (slot: Slot | null) => void;
 }
 
 function shortTime(t: string): string {
@@ -33,73 +33,112 @@ function groupSlotsByDate(slots: Slot[]): Map<string, Slot[]> {
 export default function AvailabilityPanel({ selectedSlot, onSelectSlot }: AvailabilityPanelProps) {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [earliest, setEarliest] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [zipCode, setZipCode] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
 
-  const fetchAvailability = useCallback(async () => {
+  const fetchAvailability = useCallback(async (zip?: string) => {
+    const zipToUse = zip ?? zipCode;
+    if (!zipToUse || zipToUse.length < 5) return;
+
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(process.env.NEXT_PUBLIC_AVAILABILITY_WEBHOOK_URL!);
+      const res = await fetch(process.env.NEXT_PUBLIC_AVAILABILITY_WEBHOOK_URL!, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ zip_code: zipToUse }),
+      });
       if (!res.ok) throw new Error("Failed to fetch availability");
       const data = await res.json();
       const payload: AvailabilityResponse = Array.isArray(data) ? data[0] : data;
       setSlots(payload.available_slots || []);
       setEarliest(payload.earliest_available || null);
+      setHasSearched(true);
     } catch {
       setError("Could not load availability. Please try again.");
       setSlots([]);
+      setHasSearched(true);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [zipCode]);
 
-  useEffect(() => {
-    fetchAvailability();
-  }, [fetchAvailability]);
+  function handleZipKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      fetchAvailability();
+    }
+  }
 
   const grouped = groupSlotsByDate(slots);
 
   return (
     <div className="bg-[#161920] border border-[#252830] rounded-lg p-4 shadow-lg">
+      {/* Header row: title + zip + refresh */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-white uppercase tracking-wide">Availability</h2>
-        <button
-          onClick={fetchAvailability}
-          disabled={loading}
-          className="px-3 py-1 border border-amber-500 text-amber-500 rounded text-sm font-mono hover:bg-amber-500/10 transition-colors disabled:opacity-50"
-        >
-          {loading ? "Loading..." : "Refresh"}
-        </button>
-      </div>
-
-      {/* Earliest Available */}
-      <div className="mb-3 p-3 bg-[#0d0f14] border-l-4 border-green-500 rounded">
-        <span className="text-xs text-gray-400 font-mono uppercase">Earliest Available</span>
-        <p className="text-green-400 font-mono text-sm mt-0.5">
-          {earliest || "\u2014"}
-        </p>
-      </div>
-
-      {/* Selected Slot */}
-      <div className="mb-4 p-3 bg-[#0d0f14] border-l-4 border-amber-500 rounded">
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-xs text-gray-400 font-mono uppercase">Selected Slot</span>
-            <p className="text-amber-400 font-mono text-sm mt-0.5">
-              {selectedSlot || "\u2014"}
-            </p>
-          </div>
-          {selectedSlot && (
-            <button
-              onClick={() => onSelectSlot(null)}
-              className="text-xs text-gray-400 hover:text-white border border-[#252830] rounded px-2 py-1 transition-colors"
-            >
-              Clear
-            </button>
-          )}
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={5}
+            placeholder="Zip Code"
+            value={zipCode}
+            onChange={(e) => setZipCode(e.target.value.replace(/\D/g, ""))}
+            onKeyDown={handleZipKeyDown}
+            className="w-24 px-2 py-1 bg-[#0d0f14] border border-[#252830] rounded text-sm font-mono text-white placeholder-gray-600 focus:border-amber-500 focus:outline-none transition-colors text-center"
+          />
+          <button
+            onClick={() => fetchAvailability()}
+            disabled={loading || zipCode.length < 5}
+            className="px-3 py-1 border border-amber-500 text-amber-500 rounded text-sm font-mono hover:bg-amber-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Loading..." : "Refresh"}
+          </button>
         </div>
       </div>
+
+      {/* Prompt when no zip entered yet */}
+      {!hasSearched && !loading && (
+        <div className="py-12 text-center">
+          <p className="text-gray-500 text-sm font-mono">
+            Enter a zip code to check availability
+          </p>
+        </div>
+      )}
+
+      {/* Earliest Available — only show after search */}
+      {hasSearched && (
+        <div className="mb-3 p-3 bg-[#0d0f14] border-l-4 border-green-500 rounded">
+          <span className="text-xs text-gray-400 font-mono uppercase">Earliest Available</span>
+          <p className="text-green-400 font-mono text-sm mt-0.5">
+            {earliest || "\u2014"}
+          </p>
+        </div>
+      )}
+
+      {/* Selected Slot */}
+      {hasSearched && (
+        <div className="mb-4 p-3 bg-[#0d0f14] border-l-4 border-amber-500 rounded">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xs text-gray-400 font-mono uppercase">Selected Slot</span>
+              <p className="text-amber-400 font-mono text-sm mt-0.5">
+                {selectedSlot?.slot_display || "\u2014"}
+              </p>
+            </div>
+            {selectedSlot && (
+              <button
+                onClick={() => onSelectSlot(null)}
+                className="text-xs text-gray-400 hover:text-white border border-[#252830] rounded px-2 py-1 transition-colors"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 p-3 bg-red-900/30 border border-red-700 rounded text-red-400 text-sm">
@@ -108,7 +147,7 @@ export default function AvailabilityPanel({ selectedSlot, onSelectSlot }: Availa
       )}
 
       {/* Slot Cards */}
-      {!loading && slots.length === 0 && !error && (
+      {hasSearched && !loading && slots.length === 0 && !error && (
         <p className="text-gray-500 text-sm text-center py-8">
           No availability in the next 5 days.
         </p>
@@ -130,11 +169,11 @@ export default function AvailabilityPanel({ selectedSlot, onSelectSlot }: Availa
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {daySlots.map((slot, i) => {
-                  const isSelected = selectedSlot === slot.slot_display;
+                  const isSelected = selectedSlot?.slot_display === slot.slot_display;
                   return (
                     <button
                       key={i}
-                      onClick={() => onSelectSlot(slot.slot_display)}
+                      onClick={() => onSelectSlot(slot)}
                       title={slot.arrival_window}
                       className={`font-mono text-xs px-2 py-1.5 rounded border transition-all cursor-pointer ${
                         isSelected

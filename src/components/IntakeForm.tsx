@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { User } from "@/types";
+import type { User, Slot } from "@/types";
 
 const CATEGORY_OPTIONS = [
   "",
@@ -15,24 +15,26 @@ const CATEGORY_OPTIONS = [
 
 const HEAR_OPTIONS = [
   "",
-  "Google",
-  "Yelp",
-  "Nextdoor",
-  "Referral",
-  "Past Customer",
   "ChatGPT",
-  "Reddit",
-  "Service Truck",
-  "TikTok",
-  "Instagram",
-  "FaceBook",
-  "Website",
+  "Facebook",
+  "Google",
+  "LSA Google",
+  "Next Door",
   "Other",
+  "Past Customer",
+  "Porch",
+  "Reddit",
+  "Referral",
+  "Service Truck",
+  "Shift Program",
+  "TikTok",
+  "Website",
+  "Yelp",
 ];
 
 interface IntakeFormProps {
   user: User;
-  selectedSlot: string | null;
+  selectedSlot: Slot | null;
   onClearSlot: () => void;
 }
 
@@ -135,10 +137,15 @@ export default function IntakeForm({ user, selectedSlot, onClearSlot }: IntakeFo
         reason_for_call: form.reason_for_call.trim(),
         notes_to_tech: form.notes_to_tech.trim(),
         category: form.category,
-        how_did_you_hear: form.how_did_you_hear,
+        referal_source: form.how_did_you_hear,
         tenant_name: form.tenant_name.trim(),
         tenant_phone: form.tenant_phone.trim(),
-        selected_slot: selectedSlot,
+        selected_slot: selectedSlot?.slot_display || "",
+        preferred_date: selectedSlot?.date || "",
+        preferred_start_time: selectedSlot?.start_time || "",
+        tech_id: selectedSlot?.tech_id || "",
+        tech_first_name: selectedSlot?.tech_first_name || "",
+        tech_last_name: selectedSlot?.tech_last_name || "",
         opportunity_owner: user.name,
         intake_source: "live_intake",
       };

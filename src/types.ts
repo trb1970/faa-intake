@@ -8,6 +8,10 @@ export interface Slot {
   start_time: string;
   arrival_window: string;
   slot_display: string;
+  tech_id?: string;
+  tech_first_name?: string;
+  tech_last_name?: string;
+  available_techs?: number;
 }
 
 export interface AvailabilityResponse {
